@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FormulateGreen — Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  /* ── Design Tokens ── */
+  :root {
+    --teal:    #0A6E6E;
+    --blue:    #1A4A8A;
+    --green:   #4CAF73;
+    --amber:   #E07B00;
+    --bg:      #F7FAFA;
+    --charcoal:#1A1A1A;
+    --gray:    #6B7280;
+    --white:   #FFFFFF;
+    --shadow:  0 2px 12px rgba(0,0,0,0.08);
+    --r:       14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #E8EAED;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+    gap: 20px;
+  }
+
+  /* ── Screen Switcher Nav ── */
+  .switcher {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    background: var(--white); padding: 12px 18px; border-radius: 50px;
+    box-shadow: var(--shadow);
+  }
+  .sw-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 6px 14px; border-radius: 50px; border: 1.5px solid var(--teal);
+    background: transparent; color: var(--teal); cursor: pointer; transition: all 0.2s;
+  }
+  .sw-btn.active, .sw-btn:hover { background: var(--teal); color: var(--white); }
+  .sw-label { font-family:'Poppins',sans-serif; font-size:13px; color:var(--gray); display:flex; align-items:center; }
+
+  /* ── Screen Wrappers ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Mobile Phone Shell ── */
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: var(--bg);
+    border-radius: 44px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18), inset 0 0 0 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  /* ── Desktop Shell ── */
+  .desktop {
+    width: 900px;
+    min-height: 580px;
+    background: var(--bg);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  /* ── Nav Bar ── */
+  .navbar {
+    background: var(--teal); padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .navbar .logo { font-family:'Poppins',sans-serif; font-size:18px; font-weight:700; color:var(--white); }
+  .navbar .nav-title { font-family:'Poppins',sans-serif; font-size:16px; font-weight:600; color:var(--white); }
+  .navbar .back { color:var(--white); font-size:20px; cursor:pointer; line-height:1; }
+  .navbar .avatar { width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;color:var(--white);font-size:14px;font-weight:600; }
+
+  /* ── Scrollable Content ── */
+  .content { flex:1; overflow-y:auto; padding:24px 20px; display:flex; flex-direction:column; gap:20px; }
+  .content.no-pad { padding:0; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    background:var(--teal); display:flex; justify-content:space-around;
+    padding:12px 0 18px; flex-shrink:0;
+  }
+  .bnav-item { display:flex;flex-direction:column;align-items:center;gap:3px;color:rgba(255,255,255,0.6);font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer; }
+  .bnav-item.active { color:var(--green); }
+  .bnav-item .icon { font-size:20px; }
+
+  /* ── Cards ── */
+  .card {
+    background:var(--white); border-radius:var(--r);
+    box-shadow:var(--shadow); padding:18px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display:block; width:100%; padding:15px; border-radius:var(--r);
+    border:none; cursor:pointer; font-family:'Poppins',sans-serif;
+    font-size:15px; font-weight:700; text-align:center; transition:opacity 0.15s;
+  }
+  .btn:hover { opacity:0.88; }
+  .btn-teal { background:var(--teal); color:var(--white); }
+  .btn-green { background:var(--green); color:var(--white); }
+  .btn-outline-teal { background:transparent; border:2px solid var(--teal); color:var(--teal); }
+  .btn-outline-amber { background:transparent; border:2px solid var(--amber); color:var(--amber); padding:10px 18px; border-radius:10px; font-size:13px; }
+  .btn-green-sm { background:var(--green); color:var(--white); padding:10px 18px; border-radius:10px; font-size:13px; font-family:'Poppins',sans-serif; font-weight:700; border:none; cursor:pointer; }
+
+  /* ── Typography ── */
+  h1 { font-family:'Poppins',sans-serif; font-size:22px; font-weight:700; color:var(--charcoal); }
+  h2 { font-family:'Poppins',sans-serif; font-size:17px; font-weight:700; color:var(--charcoal); }
+  h3 { font-family:'Poppins',sans-serif; font-size:15px; font-weight:600; color:var(--teal); }
+  p  { font-size:14px; color:var(--gray); line-height:1.5; }
+
+  /* ── Badges ── */
+  .badge {
+    display:inline-block; padding:4px 10px; border-radius:50px;
+    font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
+  }
+  .badge-green  { background:#E8F7EE; color:var(--green); }
+  .badge-amber  { background:#FFF3E0; color:var(--amber); }
+  .badge-teal   { background:var(--teal); color:var(--white); }
+
+  /* ── Progress Bar ── */
+  .progress-wrap { background:#E5E7EB; border-radius:50px; height:8px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:50px; }
+  .fill-green { background:var(--green); }
+  .fill-amber { background:var(--amber); }
+
+  /* ── Select / Dropdown ── */
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-label { font-family:'Poppins',sans-serif; font-size:14px; font-weight:600; color:var(--charcoal); }
+  .form-select {
+    padding:13px 14px; border-radius:10px; border:1.5px solid #D1D5DB;
+    font-family:'DM Sans',sans-serif; font-size:14px; color:var(--charcoal);
+    background:var(--white); appearance:none; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center;
+  }
+  .form-select:focus { outline:none; border-color:var(--teal); }
+
+  /* ── Progress Dots ── */
+  .dots { display:flex; gap:8px; justify-content:center; }
+  .dot { width:10px;height:10px;border-radius:50%;background:#D1D5DB; }
+  .dot.active { background:var(--teal); }
+
+  /* ── Tabs ── */
+  .tab-bar { display:flex; border-bottom:1.5px solid #E5E7EB; }
+  .tab { flex:1; padding:12px; text-align:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:var(--gray); cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-1.5px; }
+  .tab.active { color:var(--teal); border-bottom-color:var(--teal); font-weight:600; }
+
+  /* ──── SCREEN 1: Login ──── */
+  #s1 .phone { justify-content:center; }
+  .login-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:40px 28px; }
+  .login-logo-text { font-family:'Poppins',sans-serif; font-size:30px; font-weight:700; color:var(--teal); }
+  .login-tagline { font-size:13px; color:var(--gray); text-align:center; margin-top:-20px; }
+  .login-icon { font-size:80px; }
+  .signup-link { text-align:center; font-size:13px; color:var(--gray); }
+  .signup-link a { color:var(--blue); text-decoration:underline; cursor:pointer; }
+  .powered { text-align:center; font-size:11px; color:var(--gray); }
+
+  /* ──── SCREEN 2: Dashboard ──── */
+  .greeting h2 { font-size:20px; }
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .action-card {
+    background:var(--white); border-radius:var(--r); box-shadow:var(--shadow);
+    padding:20px 14px; display:flex; flex-direction:column; align-items:center;
+    gap:10px; cursor:pointer; transition:transform 0.15s;
+  }
+  .action-card:hover { transform:translateY(-2px); }
+  .action-card .icon { font-size:32px; }
+  .action-card .label { font-family:'Poppins',sans-serif; font-size:12px; font-weight:600; color:var(--charcoal); text-align:center; }
+
+  /* ──── SCREEN 4: Ingredient Cards ──── */
+  .ingredient-card { border-radius:var(--r); box-shadow:var(--shadow); padding:18px; background:var(--white); display:flex; flex-direction:column; gap:10px; }
+  .ingredient-card.eco { border:1.5px solid var(--green); }
+  .ingredient-header { display:flex; justify-content:space-between; align-items:flex-start; }
+  .ingredient-meta { display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--gray); }
+  .ingredient-meta span { display:flex; gap:6px; align-items:center; }
+  .ing-score-row { display:flex; align-items:center; gap:10px; }
+  .ing-score-row .score-label { font-size:12px; color:var(--gray); min-width:90px; }
+  .rec-tag { font-size:11px; font-family:'DM Sans',sans-serif; font-weight:500; color:var(--teal); }
+  .gemini-note { font-size:11px; color:var(--gray); font-style:italic; text-align:center; }
+
+  /* ──── SCREEN 5: Desktop Dashboard ──── */
+  .desktop-topbar {
+    background:var(--teal); padding:14px 28px;
+    display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  }
+  .desktop-topbar .logo { font-family:'Poppins',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+  .desktop-nav { display:flex; gap:24px; }
+  .desktop-nav a { font-size:13px; color:rgba(255,255,255,0.8); text-decoration:none; font-family:'DM Sans',sans-serif; }
+  .desktop-nav a:hover { color:var(--white); }
+  .desktop-content { flex:1; display:flex; gap:0; overflow:hidden; }
+  .panel-left { flex:0 0 58%; padding:28px; overflow-y:auto; display:flex; flex-direction:column; gap:20px; border-right:1px solid #E5E7EB; }
+  .panel-right { flex:0 0 42%; padding:28px; display:flex; flex-direction:column; gap:16px; }
+  .desktop-footer { background:var(--teal); padding:18px 28px; display:flex; justify-content:center; flex-shrink:0; }
+  .lca-flow { display:flex; flex-direction:column; gap:0; }
+  .lca-step { display:flex; gap:14px; align-items:flex-start; }
+  .lca-step-connector { display:flex; flex-direction:column; align-items:center; }
+  .lca-step-dot { width:36px;height:36px;border-radius:50%;background:var(--teal);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+  .lca-step-line { width:2px;height:24px;background:#D1D5DB;margin:0 auto; }
+  .lca-step-body { padding-bottom:20px; }
+  .lca-step-body h3 { font-size:13px; font-weight:600; color:var(--charcoal); font-family:'Poppins',sans-serif; margin-bottom:4px; }
+  .lca-step-body p { font-size:12px; color:var(--gray); }
+  .sdg-row { display:flex; align-items:center; gap:10px; }
+  .sdg-name { font-size:12px; color:var(--charcoal); font-family:'DM Sans',sans-serif; min-width:160px; }
+  .sdg-score { font-size:12px; font-weight:600; color:var(--charcoal); min-width:50px; text-align:right; }
+
+  /* ──── SCREEN 6: Confirmation ──── */
+  .confirm-body { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:40px 28px; text-align:center; }
+  .check-circle { width:90px;height:90px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:44px;color:var(--white); }
+  .confirm-body .pill { background:var(--teal);color:var(--white);padding:8px 20px;border-radius:50px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500; }
+  .confirm-buttons { width:100%;display:flex;flex-direction:column;gap:12px; }
+  .confirm-footer { font-size:11px;color:var(--gray);font-style:italic; }
+
+  /* ── Responsive note ── */
+  @media (max-width: 600px) {
+    .phone { width: 100%; border-radius: 24px; }
+    .desktop { width: 100%; }
+    .desktop-content { flex-direction: column; }
+    .panel-left, .panel-right { flex: none; border-right: none; border-bottom: 1px solid #E5E7EB; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Screen Switcher -->
+<div class="switcher">
+  <span class="sw-label">Jump to screen →</span>
+  <button class="sw-btn active" onclick="show(1)">1 · Login</button>
+  <button class="sw-btn" onclick="show(2)">2 · Dashboard</button>
+  <button class="sw-btn" onclick="show(3)">3 · Input</button>
+  <button class="sw-btn" onclick="show(4)">4 · Ingredients</button>
+  <button class="sw-btn" onclick="show(5)">5 · LCA / SDG</button>
+  <button class="sw-btn" onclick="show(6)">6 · Confirmation</button>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1 — Welcome / Login
+════════════════════════════════════════════ -->
+<div id="s1" class="screen active">
+  <div class="phone">
+    <div class="login-body">
+      <div class="login-logo-text">FormulateGreen</div>
+      <p class="login-tagline">Formulate Responsibly. Build Sustainably.</p>
+      <div class="login-icon">🧪</div>
+      <button class="btn btn-teal" onclick="show(2)">Login with Email</button>
+      <p class="signup-link">Don't have an account? <a>Sign up</a></p>
+      <p class="powered">Powered by <strong>Google</strong> &amp; <strong>OPay</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2 — Home Dashboard
+════════════════════════════════════════════ -->
+<div id="s2" class="screen">
+  <div class="phone">
+    <div class="navbar">
+      <span class="logo">FormulateGreen</span>
+      <div class="avatar">Z</div>
+    </div>
+    <div class="content">
+      <div class="greeting">
+        <h2>Welcome back, Zahrah 👋</h2>
+        <p style="margin-top:6px;">What would you like to formulate today?</p>
+      </div>
+      <div class="grid-2">
+        <div class="action-card" onclick="show(3)">
+          <span class="icon" style="color:var(--teal)">🧪</span>
+          <span class="label">New Formulation</span>
+        </div>
+        <div class="action-card">
+          <span class="icon" style="color:var(--blue)">📁</span>
+          <span class="label">My Formulations</span>
+        </div>
+        <div class="action-card">
+          <span class="icon" style="color:var(--green)">📊</span>
+          <span class="label">SDG Scorecard</span>
+        </div>
+        <div class="action-card">
+          <span class="icon" style="color:var(--amber)">📄</span>
+          <span class="label">LCA Reports</span>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="bnav-item active"><span class="icon">🏠</span>Home</div>
+      <div class="bnav-item"><span class="icon">⚗️</span>Formulate</div>
+      <div class="bnav-item"><span class="icon">📚</span>Library</div>
+      <div class="bnav-item"><span class="icon">👤</span>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 3 — Formulation Input
+════════════════════════════════════════════ -->
+<div id="s3" class="screen">
+  <div class="phone">
+    <div class="navbar">
+      <span class="back" onclick="show(2)">←</span>
+      <span class="nav-title">New Formulation</span>
+      <span></span>
+    </div>
+    <div class="content">
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Select Polymer Type</label>
+        <select class="form-select">
+          <option value="" disabled selected>e.g. Flexible PVC</option>
+          <option>PVC</option><option>PLA</option><option>PP</option>
+          <option>HDPE</option><option>PHA</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Intended Application</label>
+        <select class="form-select">
+          <option value="" disabled selected>e.g. Footwear</option>
+          <option>Footwear</option><option>Packaging</option><option>Pipe</option>
+          <option>Film</option><option>Medical Device</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Environmental Context During Use</label>
+        <select class="form-select">
+          <option value="" disabled selected>e.g. Outdoor exposure</option>
+          <option>Indoor use</option><option>Outdoor exposure</option>
+          <option>Water contact</option><option>Soil contact</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">End of Life Scenario</label>
+        <select class="form-select">
+          <option value="" disabled selected>e.g. Recyclable</option>
+          <option>Recyclable</option><option>Compostable</option>
+          <option>Landfill</option><option>Incineration</option>
+        </select>
+      </div>
+
+      <button class="btn btn-teal" onclick="show(4)">Generate Formulation ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 4 — Ingredient Recommendations
+════════════════════════════════════════════ -->
+<div id="s4" class="screen">
+  <div class="phone">
+    <div class="navbar">
+      <span class="back" onclick="show(3)">←</span>
+      <span class="nav-title" style="font-size:13px;">Flexible PVC — Footwear</span>
+      <span></span>
+    </div>
+    <div class="tab-bar">
+      <div class="tab">Resin</div>
+      <div class="tab active">Additives</div>
+      <div class="tab">Process</div>
+      <div class="tab">Testing</div>
+    </div>
+    <div class="content" style="padding-top:18px;">
+      <p style="font-size:13px;font-weight:600;color:var(--gray);">Plasticiser Options — Select one</p>
+
+      <!-- Conventional Card -->
+      <div class="ingredient-card">
+        <div class="ingredient-header">
+          <h2>DINP Plasticiser</h2>
+          <span class="badge badge-amber">⚠️ Moderate Toxicity</span>
+        </div>
+        <div class="ingredient-meta">
+          <span>💰 Cost: <strong>Low ✓</strong></span>
+        </div>
+        <div class="ing-score-row">
+          <span class="score-label">SDG Score: 42/100</span>
+          <div class="progress-wrap" style="flex:1">
+            <div class="progress-fill fill-amber" style="width:42%"></div>
+          </div>
+          <span style="font-size:12px;color:var(--amber);font-weight:600;">42</span>
+        </div>
+        <button class="btn-outline-amber">Select</button>
+      </div>
+
+      <!-- Eco-friendly Card -->
+      <div class="ingredient-card eco">
+        <div class="ingredient-header">
+          <h2>Citrate Ester Plasticiser</h2>
+          <span class="badge badge-green">✅ Non-Toxic</span>
+        </div>
+        <span class="rec-tag">⭐ Recommended</span>
+        <div class="ingredient-meta">
+          <span>💰 Cost: <strong>Moderate</strong></span>
+        </div>
+        <div class="ing-score-row">
+          <span class="score-label">SDG Score: 81/100</span>
+          <div class="progress-wrap" style="flex:1">
+            <div class="progress-fill fill-green" style="width:81%"></div>
+          </div>
+          <span style="font-size:12px;color:var(--green);font-weight:600;">81</span>
+        </div>
+        <button class="btn-green-sm" onclick="show(5)">Select</button>
+      </div>
+
+      <p class="gemini-note">Suggestions powered by Google Gemini</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 5 — LCA + SDG Scorecard (Desktop)
+════════════════════════════════════════════ -->
+<div id="s5" class="screen">
+  <div class="desktop">
+    <div class="desktop-topbar">
+      <span class="logo">FormulateGreen</span>
+      <nav class="desktop-nav">
+        <a href="#">Dashboard</a>
+        <a href="#">My Formulations</a>
+        <a href="#">Reports</a>
+        <a href="#">Settings</a>
+      </nav>
+      <div class="avatar">Z</div>
+    </div>
+
+    <div style="padding:20px 28px 0; flex-shrink:0;">
+      <h1 style="font-size:17px;">Life Cycle Analysis — Flexible PVC Footwear Compound</h1>
+    </div>
+
+    <div class="desktop-content">
+      <!-- Left Panel -->
+      <div class="panel-left">
+        <h3 style="font-size:14px;color:var(--charcoal);font-family:'Poppins',sans-serif;font-weight:600;">Lifecycle Flow</h3>
+        <div class="lca-flow">
+          <div class="lca-step">
+            <div class="lca-step-connector">
+              <div class="lca-step-dot">⛏️</div>
+              <div class="lca-step-line"></div>
+            </div>
+            <div class="lca-step-body">
+              <h3>Raw Material Extraction</h3>
+              <p>PVC resin derived from petroleum feedstock. Citrate plasticiser sourced from bio-based citric acid. Lower carbon footprint vs. DINP.</p>
+            </div>
+          </div>
+          <div class="lca-step">
+            <div class="lca-step-connector">
+              <div class="lca-step-dot">🏭</div>
+              <div class="lca-step-line"></div>
+            </div>
+            <div class="lca-step-body">
+              <h3>Processing &amp; Compounding</h3>
+              <p>Twin-screw extrusion at 175°C. No heavy metal stabilisers required. Energy consumption: 2.3 MJ/kg estimated.</p>
+            </div>
+          </div>
+          <div class="lca-step">
+            <div class="lca-step-connector">
+              <div class="lca-step-dot">👟</div>
+              <div class="lca-step-line"></div>
+            </div>
+            <div class="lca-step-body">
+              <h3>Use Phase</h3>
+              <p>Outdoor exposure; UV stabilisers present. Citrate plasticiser shows no endocrine-disrupting leachates. Expected service life: 3–5 years.</p>
+            </div>
+          </div>
+          <div class="lca-step">
+            <div class="lca-step-connector">
+              <div class="lca-step-dot" style="background:var(--green);">♻️</div>
+            </div>
+            <div class="lca-step-body">
+              <h3>End of Life</h3>
+              <p>Recyclable via mechanical recycling stream. Citrate additives do not contaminate recycle stream. Preferred over landfill or incineration.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="panel-right">
+        <div class="card" style="flex:1;">
+          <h2 style="font-size:15px;margin-bottom:16px;">SDG Alignment Score</h2>
+
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <div class="sdg-row" style="margin-bottom:5px;">
+                <span class="sdg-name">🟢 SDG 3 — Good Health</span>
+                <span class="sdg-score">78/100</span>
+              </div>
+              <div class="progress-wrap"><div class="progress-fill fill-green" style="width:78%"></div></div>
+            </div>
+            <div>
+              <div class="sdg-row" style="margin-bottom:5px;">
+                <span class="sdg-name">🟢 SDG 12 — Responsible Consumption</span>
+                <span class="sdg-score">85/100</span>
+              </div>
+              <div class="progress-wrap"><div class="progress-fill fill-green" style="width:85%"></div></div>
+            </div>
+            <div>
+              <div class="sdg-row" style="margin-bottom:5px;">
+                <span class="sdg-name">🟡 SDG 13 — Climate Action</span>
+                <span class="sdg-score">71/100</span>
+              </div>
+              <div class="progress-wrap"><div class="progress-fill fill-amber" style="width:71%"></div></div>
+            </div>
+            <div style="border-top:1.5px solid #E5E7EB;padding-top:14px;">
+              <div class="sdg-row" style="margin-bottom:5px;">
+                <span class="sdg-name" style="font-weight:600;color:var(--teal);">⭐ Overall Score</span>
+                <span class="sdg-score" style="color:var(--teal);">78/100</span>
+              </div>
+              <div class="progress-wrap" style="height:12px;"><div class="progress-fill fill-green" style="width:78%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="desktop-footer">
+      <button class="btn btn-teal" style="max-width:320px;font-size:14px;" onclick="show(6)">Download Full LCA Report (PDF)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN 6 — Report Download Confirmation
+════════════════════════════════════════════ -->
+<div id="s6" class="screen">
+  <div class="phone">
+    <div class="navbar">
+      <span></span>
+      <span class="nav-title">Report Ready</span>
+      <span></span>
+    </div>
+    <div class="confirm-body">
+      <div class="check-circle">✓</div>
+      <h1>Your LCA Report is Ready!</h1>
+      <p>Flexible PVC — Footwear Application</p>
+      <div class="pill">Overall SDG Score: 78/100 ⭐</div>
+      <div class="confirm-buttons">
+        <button class="btn btn-teal" onclick="show(1)">Download PDF Report</button>
+        <button class="btn btn-outline-teal">Share Report</button>
+      </div>
+      <p class="confirm-footer">Formulation analysis powered by Google Gemini</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('s'+n).classList.add('active');
+    document.querySelectorAll('.sw-btn')[n-1].classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+</body>
+</html>
